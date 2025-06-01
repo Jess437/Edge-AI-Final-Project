@@ -1,6 +1,9 @@
 ## 備註
-因為要用到nvcc，在T4上建議使用miniconda安裝cuda-toolkit
+因為要用到nvcc，在T4上建議使用miniconda安裝cuda-toolkit  
 微調與量化模型是在其他機器上做的
+
+## 整體架構
+![image](https://github.com/user-attachments/assets/8ae607d0-b29f-4159-9f65-772a9fbd849c)
 
 ## 1.安裝並啟動miniconda
 ```bash
