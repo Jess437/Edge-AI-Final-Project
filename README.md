@@ -13,7 +13,6 @@ rm ~/miniconda3/miniconda.sh
 source ~/miniconda3/bin/activate
 conda init --all
 conda create --name sg python=3.10
-注意:如果崩潰，請使用conda create --name sg python=3.9
 conda activate sg
 ```
 
@@ -26,6 +25,7 @@ chmod +x install.sh
 ## 3. 執行程式
 ```bash
 python result.py
+注意:如果此時程式崩潰，請回到第一步並改為使用conda create --name sg python=3.9
 ```
 
 ## 備註
