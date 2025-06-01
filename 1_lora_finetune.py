@@ -1,6 +1,6 @@
 # %%
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "7"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 # %%
 import torch
@@ -15,24 +15,20 @@ import numpy as np
 import argparse
 
 # model_name and new_model_name
-parser = argparse.ArgumentParser(description="Train a Llama-3.2-3B model with LoRA on WikiText dataset.")
-parser.add_argument("--model_name", type=str, default="meta-llama/Llama-3.2-3B-Instruct", help="Name of the pre-trained model to use.")
-parser.add_argument("--new_model_name", type=str, default="Llama-3.2-3B-LoRA-WikiText", help="Name for the new model after training.")
+parser = argparse.ArgumentParser()
+parser.add_argument("--model_name", type=str, default="Llama-3.2-3B-Instruct-p20", help="Name of the pre-trained model to use.")
+parser.add_argument("--new_model_name", type=str, default="Llama-3.2-3B-Instruct-p20-ft", help="Name for the new model after training.")
 args = parser.parse_args()
 model_name = args.model_name
 new_model_name = args.new_model_name
 
-# # %%
-# model_name = "meta-llama/Llama-3.2-3B-Instruct"   
-# new_model_name = "Llama-3.2-3B-LoRA-WikiText"
-
+# %%
 model = AutoModelForCausalLM.from_pretrained(model_name, 
                                              device_map="cuda")
 model.config.use_cache = False
 # model.config.pretraining_tp = 1
 
-# # %%
-# dataset = load_dataset("wikitext", "wikitext-2-raw-v1")
+# %%
 ds1 = load_dataset("Salesforce/wikitext", "wikitext-2-raw-v1", split="train")
 ds2 = load_dataset("Salesforce/wikitext", "wikitext-103-raw-v1", split="train[:15%]")
 dataset = concatenate_datasets([ds1, ds2])
@@ -50,12 +46,8 @@ from peft import LoraConfig, TaskType, get_peft_model
 lora_config = LoraConfig(
     task_type=TaskType.CAUSAL_LM,
     target_modules=["gate_proj", "up_proj","down_proj"],
-    # r=16,
-    # lora_alpha=32,
-
-    r=32,
-    lora_alpha=64,
-
+    r=16,
+    lora_alpha=32,
     bias="none",
     lora_dropout=0.1,
 )
@@ -81,34 +73,25 @@ def preprocess(dataset_split, tokenizer, block_size=2048):
 
     # 建成 Dataset
     dataset = Dataset.from_dict({"input_ids": input_ids})
-    # labels = input_ids
     dataset = dataset.map(lambda e: {"labels": e["input_ids"]})
     return dataset
 
-# %%
 train_dataset = preprocess(dataset, tokenizer, block_size=2048)
-# valid_dataset = preprocess(dataset["validation"], tokenizer, block_size=2048)
-
-# # %%
-# train_dataset
 
 # %%
 from transformers import Trainer, TrainingArguments
 
 training_args = TrainingArguments(
     output_dir="./results",              # 訓練結果存儲路徑
-    # num_train_epochs=2,                  # 訓練輪次
     num_train_epochs=1,                  # 訓練輪次
     per_device_train_batch_size=2,       # 訓練時每台設備的 batch size
     per_device_eval_batch_size=2,        # 評估時每台設備的 batch size
     gradient_accumulation_steps=2,       # 梯度累積步數
     logging_dir="./logs",                # 日誌存放路徑
-    # lr_scheduler_type="cosine",          # 學習率調度器類型
     seed=42,                           # 隨機種子
     
     max_grad_norm=0.8,                   # 梯度裁剪的最大值
     learning_rate=5e-5,                # 學習率
-    # learning_rate=1e-4,                # 學習率
     
     eval_strategy="no",
     logging_steps=100,                   # 每250步就記錄一次日誌
@@ -122,61 +105,45 @@ trainer = Trainer(
     model=model,
     args=training_args,
     train_dataset=train_dataset,
-    # eval_dataset=valid_dataset,
-    # train_dataset=tokenized_datasets["train"],
-    # eval_dataset=tokenized_datasets["validation"],
 )
 
 trainer.train() 
-# trainer.evaluate()
 
 
-
-
-
-def evaluate_ppl(model, tokenizer, device="cuda:0"):
-    test_dataset = load_dataset("wikitext", "wikitext-2-raw-v1", split="test")
+# def evaluate_ppl(model, tokenizer, device="cuda:0"):
+#     test_dataset = load_dataset("wikitext", "wikitext-2-raw-v1", split="test")
     
-    test_enc = tokenizer("\n\n".join(test_dataset["text"]), return_tensors="pt")
-    model.seqlen = 2048
-    test_enc = test_enc.input_ids.to(device)
+#     test_enc = tokenizer("\n\n".join(test_dataset["text"]), return_tensors="pt")
+#     model.seqlen = 2048
+#     test_enc = test_enc.input_ids.to(device)
     
-    nsamples = test_enc.numel() // model.seqlen
-    nlls = []  
-    for i in tqdm(range(nsamples), desc="Evaluating..."):
-        batch = test_enc[:, (i * model.seqlen):((i + 1) * model.seqlen)]
+#     nsamples = test_enc.numel() // model.seqlen
+#     nlls = []  
+#     for i in tqdm(range(nsamples), desc="Evaluating..."):
+#         batch = test_enc[:, (i * model.seqlen):((i + 1) * model.seqlen)]
         
-        with torch.no_grad():
-            lm_logits = model(batch).logits
+#         with torch.no_grad():
+#             lm_logits = model(batch).logits
 
-        shift_logits = lm_logits[:, :-1, :].contiguous().float()
-        shift_labels = test_enc[:, (i * model.seqlen):((i + 1) * model.seqlen)][:, 1:]
+#         shift_logits = lm_logits[:, :-1, :].contiguous().float()
+#         shift_labels = test_enc[:, (i * model.seqlen):((i + 1) * model.seqlen)][:, 1:]
 
-        loss_fct = nn.CrossEntropyLoss()
-        loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
-        neg_log_likelihood = loss.float() * model.seqlen
-        nlls.append(neg_log_likelihood)
+#         loss_fct = nn.CrossEntropyLoss()
+#         loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
+#         neg_log_likelihood = loss.float() * model.seqlen
+#         nlls.append(neg_log_likelihood)
 
-    ppl = torch.exp(torch.stack(nlls).sum() / (nsamples * model.seqlen))
+#     ppl = torch.exp(torch.stack(nlls).sum() / (nsamples * model.seqlen))
     
-    return ppl.item()
+#     return ppl.item()
 
-ppl = evaluate_ppl(model, tokenizer)
-print("Final PPL:", ppl)
-
-
+# ppl = evaluate_ppl(model, tokenizer)
+# print("Final PPL:", ppl)
 
 
-# # %%
-# model = model.merge_and_unload()
-# model.save_pretrained(new_model_name)
-# tokenizer.save_pretrained(new_model_name)
-
+# %%
 model.half()  # 轉成 fp16
-model.save_pretrained(f"{new_model_name}-lora")
-tokenizer.save_pretrained(f"{new_model_name}-lora")
+model = model.merge_and_unload() # Fuse LoRA weights into the base model
 
-# # %%
-model = model.merge_and_unload()
 model.save_pretrained(new_model_name)
 tokenizer.save_pretrained(new_model_name)

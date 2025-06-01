@@ -1,7 +1,7 @@
 from datasets import load_dataset
 from gptqmodel import GPTQModel, QuantizeConfig
 
-model_id = "./pruned20-llama-3b-ft"
+model_id = "./Llama-3.2-3B-Instruct-p20-ft"
 quant_path = "Llama-3.2-3B-Instruct-gptq-b4g32-p20"
 
 calibration_dataset = load_dataset(
