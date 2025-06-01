@@ -12,7 +12,7 @@ bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
 rm ~/miniconda3/miniconda.sh
 source ~/miniconda3/bin/activate
 conda init --all
-conda create --name sg python=3.10
+conda create --name sg python=3.9
 conda activate sg
 ```
 
