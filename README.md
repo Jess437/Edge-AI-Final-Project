@@ -1,6 +1,5 @@
-## 備註
-因為要用到nvcc，在T4上建議使用miniconda安裝cuda-toolkit  
-微調與量化模型是在其他機器上做的
+## Edge AI Final Project
+Small Language Model acceleration
 
 ## 整體架構
 ![image](https://github.com/user-attachments/assets/8ae607d0-b29f-4159-9f65-772a9fbd849c)
@@ -27,6 +26,10 @@ chmod +x install.sh
 ```bash
 python result.py
 ```
+
+## 備註
+因為要用到nvcc，在T4上建議使用miniconda安裝cuda-toolkit  
+微調與量化模型是在其他機器上做的
 
 ## 參考文獻 & 文章
 [GPTQModel - vLLM](https://docs.vllm.ai/en/stable/features/quantization/gptqmodel.html)  
