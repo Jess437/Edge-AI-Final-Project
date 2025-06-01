@@ -5,7 +5,7 @@
 ## 整體架構
 ![image](https://github.com/user-attachments/assets/8ae607d0-b29f-4159-9f65-772a9fbd849c)
 
-## 1.安裝並啟動miniconda
+## 1. 安裝並啟動miniconda
 ```bash
 mkdir -p ~/miniconda3
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh
@@ -17,13 +17,21 @@ conda create --name sg python=3.10
 conda activate sg
 ```
 
-## 2.安裝套件
+## 2. 安裝套件
 ```bash
 chmod +x install.sh
 ./install.sh
 ```
 
-## 3.執行程式
+## 3. 執行程式
 ```bash
 python result.py
 ```
+
+## 參考文獻 & 文章
+[GPTQModel - vLLM](https://docs.vllm.ai/en/stable/features/quantization/gptqmodel.html)  
+[Large-Language-Model-Notebooks-Course/6-PRUNING/6_3_pruning_structured_llama3.2-1b_OK.ipynb](https://github.com/peremartra/Large-Language-Model-Notebooks-Course/blob/main/6-PRUNING/6_3_pruning_structured_llama3.2-1b_OK.ipynb)  
+[Torch-Pruning/examples/LLMs/prune_llm.py at master · VainF/Torch-Pruning](https://github.com/VainF/Torch-Pruning/blob/master/examples/LLMs/prune_llm.py)  
+[[2403.17887] The Unreasonable Ineffectiveness of the Deeper Layers](https://arxiv.org/abs/2403.17887)  
+[[2405.18218] FinerCut: Finer-grained Interpretable Layer Pruning for Large Language Models](https://arxiv.org/abs/2405.18218)  
+[[2305.11627] LLM-Pruner: On the Structural Pruning of Large Language Models](https://arxiv.org/abs/2305.11627)
