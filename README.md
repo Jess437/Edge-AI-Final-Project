@@ -12,7 +12,7 @@ bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
 rm ~/miniconda3/miniconda.sh
 source ~/miniconda3/bin/activate
 conda init --all
-conda create --name sg python=3.10
+conda create --name sg python=3.9
 conda activate sg
 ```
 
@@ -25,13 +25,13 @@ chmod +x install.sh
 ## 3. 執行程式
 ```bash
 python result.py
-注意:如果此時程式崩潰，請回到第一步並改為使用conda create --name sg python=3.9
+注意:如果此時程式崩潰，請回到第一步並改為使用conda create --name sg python=3.10
 ```
 
 ## 備註
 因為要用到nvcc，在T4上建議使用miniconda安裝cuda-toolkit  
 微調與量化模型是在其他機器上做的  
-我們觀察到在某些機器上使用python=3.10會導致崩潰，python=3.9則可以正常運行，但在某些機器上則相反
+我們觀察到在某些機器上使用python=3.10會導致崩潰，python=3.9則可以正常運行，但在某些機器上則恰好相反
 
 ## 參考文獻 & 文章
 [GPTQModel - vLLM](https://docs.vllm.ai/en/stable/features/quantization/gptqmodel.html)  
